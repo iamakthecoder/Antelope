@@ -35,7 +35,7 @@ def parse_iperf_log(file_path):
                 for interval in data["intervals"]:
                     sum_data = interval.get("sum", {})
                     if "bits_per_second" in sum_data and "end" in sum_data:
-                        bitrates_kbps.append(int(sum_data["bits_per_second"])/1024)  # Convert to kbps
+                        bitrates_kbps.append(int(sum_data["bits_per_second"])/1024/1024)  # Convert to mbps
                         times.append(int(sum_data["end"]))  # Convert to int
         except json.JSONDecodeError:
             continue
@@ -62,7 +62,7 @@ def plot_bitrate(antelope_server, antelope_client, bbr_server, bbr_client):
     plt.legend()
 
     plt.xlabel('Time (seconds)')
-    plt.ylabel('Bitrate (Kbits/sec)')
+    plt.ylabel('Bitrate (Mbits/sec)')
     plt.title('iPerf3 Bitrate vs Time')
     plt.grid(True)
     plt.savefig('bitrate_comparison.png')

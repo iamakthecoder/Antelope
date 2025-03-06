@@ -21,9 +21,9 @@ preCCMap = {}
 alf = 0.9
 
 #for TESTING
-LOGGING_FILE = "testing/validation_logs_antelope" 
+LOGGING_FILE = None
 log = None
-if LOGGING_FILE is not None and os.path.exists(LOGGING_FILE): # Clear the log file
+if (LOGGING_FILE is not None) and os.path.exists(LOGGING_FILE): # Clear the log file
     with open(LOGGING_FILE, 'w'):
         pass
 if LOGGING_FILE is not None:
@@ -253,20 +253,21 @@ class OnlineServer:
             throughput = float(delivered) / float(transTime)
 
         #for TESTING (to be removed): sometimes got negative throughput while testing
-        if throughput < 0:
-            if preData is None:
-                log.write(f"ERROR: throughput < 0: maxDelivered = delivered: {maxDelivered}, transTime: {transTime}, self.flowStaticData[key][time] : {self.flowStaticData[key]['time']}, self.flowStaticData[key][beginTime] = {self.flowStaticData[key]['beginTime']}\n")
+        if log is not None:
+            if throughput < 0:
+                if preData is None:
+                    log.write(f"ERROR: throughput < 0: maxDelivered = delivered: {maxDelivered}, transTime: {transTime}, self.flowStaticData[key][time] : {self.flowStaticData[key]['time']}, self.flowStaticData[key][beginTime] = {self.flowStaticData[key]['beginTime']}\n")
+                else:
+                    log.write(f"ERROR: throughput < 0: delivered: {delivered} , maxDelivered: {maxDelivered}, preData[delivered]: {preData['delivered']}, transTime: {transTime}, self.flowStaticData[key][time] : {self.flowStaticData[key]['time']}, preData[time]: {preData['time']}\n")
+                log.flush()
+                os.fsync(log.fileno())
             else:
-                log.write(f"ERROR: throughput < 0: delivered: {delivered} , maxDelivered: {maxDelivered}, preData[delivered]: {preData['delivered']}, transTime: {transTime}, self.flowStaticData[key][time] : {self.flowStaticData[key]['time']}, preData[time]: {preData['time']}\n")
-            log.flush()
-            os.fsync(log.fileno())
-        else:
-            if preData is None:
-                log.write(f"CHECK: throughput >= 0: maxDelivered = delivered: {maxDelivered}, transTime: {transTime}, self.flowStaticData[key][time] : {self.flowStaticData[key]['time']}, self.flowStaticData[key][beginTime] = {self.flowStaticData[key]['beginTime']}\n")
-            else:
-                log.write(f"CHECK: throughput >= 0: delivered: {delivered} , maxDelivered: {maxDelivered}, preData[delivered]: {preData['delivered']}, transTime: {transTime}, self.flowStaticData[key][time] : {self.flowStaticData[key]['time']}, preData[time]: {preData['time']}\n")
-            log.flush()
-            os.fsync(log.fileno())
+                if preData is None:
+                    log.write(f"CHECK: throughput >= 0: maxDelivered = delivered: {maxDelivered}, transTime: {transTime}, self.flowStaticData[key][time] : {self.flowStaticData[key]['time']}, self.flowStaticData[key][beginTime] = {self.flowStaticData[key]['beginTime']}\n")
+                else:
+                    log.write(f"CHECK: throughput >= 0: delivered: {delivered} , maxDelivered: {maxDelivered}, preData[delivered]: {preData['delivered']}, transTime: {transTime}, self.flowStaticData[key][time] : {self.flowStaticData[key]['time']}, preData[time]: {preData['time']}\n")
+                log.flush()
+                os.fsync(log.fileno())
 
         #TODO : encountered negative throughput while testing, so added this condition; this is happening mostly due to the way (struct tcp_sock).delivered counter is maintained in case of retransmissions etc.
         if (preData is not None) and (throughput < 0):

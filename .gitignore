@@ -4,3 +4,5 @@ ebpfdata2/
 ebpfdata3/
 traindata/
 temp
+evaluation/wan/logs/
+evaluation/dcn/logs/

@@ -12,19 +12,26 @@ void updateCongHash(int key, int ipkey_29MSB, int ipkey_3LSB, int result, int ip
     unsigned int cong_map_fd, ip_cong_map_fd;
     
     ip_cong_map_fd = bpf_obj_get("/sys/fs/bpf/ip_cong_map");
+    if (ip_cong_map_fd == -1) {
+        perror("bpf_obj_get failed for ip_cong_map");
+        return;
+    }
+    
     cong_map_fd = bpf_obj_get("/sys/fs/bpf/cong_map");
-
-    if(ip_cong_map_fd==-1 || cong_map_fd==-1) {
-        printf("Error: bpf_obj_get failed\n");
+    if (cong_map_fd == -1) {
+        perror("bpf_obj_get failed for cong_map");
         return;
     }
 
     // Update map elements
     int cong_map_update = bpf_map_update_elem(cong_map_fd, &key, pval, BPF_ANY);
+    if (cong_map_update<0) {
+        perror("bpf_map_update_elem failed for cong_map");
+        return;
+    }
     int ip_cong_map_update = bpf_map_update_elem(ip_cong_map_fd, &ipkey, ipval, BPF_ANY);
-
-    if(cong_map_update<0 || ip_cong_map_update<0) {
-        printf("Error: bpf_map_update_elem failed\n");
+    if (ip_cong_map_update<0) {
+        perror("bpf_map_update_elem failed for ip_cong_map");
         return;
     }
 }
